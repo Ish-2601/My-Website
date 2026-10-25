@@ -1,0 +1,515 @@
+/* ==========================================================
+   1. DESIGN TOKENS
+   CSS variables (custom properties). Change a color here and
+   it changes everywhere it is used with var(--name).
+   ========================================================== */
+:root {
+  --bg: #ffffff;
+  --bg-alt: #f5f6fa;
+  --surface: #ffffff;
+  --text: #14161f;
+  --text-muted: #5b6070;
+  --border: #e3e5ee;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eceafd;
+  --glow: rgba(79, 70, 229, 0.16);
+
+  --radius: 16px;
+  --shadow: 0 1px 2px rgba(20, 22, 31, 0.06), 0 8px 24px rgba(20, 22, 31, 0.07);
+  --shadow-hover: 0 2px 4px rgba(20, 22, 31, 0.08), 0 16px 40px rgba(20, 22, 31, 0.12);
+  --header-h: 64px;
+
+  color-scheme: light;               /* tells the browser to draw light scrollbars, form controls... */
+}
+
+/* Dark theme: same variable names, different values.
+   1) Used when JavaScript is off and the OS prefers dark... */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1016;
+    --bg-alt: #13161f;
+    --surface: #181b27;
+    --text: #eceef6;
+    --text-muted: #9aa0b4;
+    --border: #272b3b;
+    --accent: #8b87ff;
+    --accent-hover: #a5a2ff;
+    --accent-soft: #232041;
+    --glow: rgba(139, 135, 255, 0.18);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+
+/* 2) ...or when the script sets data-theme="dark" on <html> (see index.html and script.js). */
+:root[data-theme="dark"] {
+  --bg: #0e1016;
+  --bg-alt: #13161f;
+  --surface: #181b27;
+  --text: #eceef6;
+  --text-muted: #9aa0b4;
+  --border: #272b3b;
+  --accent: #8b87ff;
+  --accent-hover: #a5a2ff;
+  --accent-soft: #232041;
+  --glow: rgba(139, 135, 255, 0.18);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+
+/* ==========================================================
+   2. RESET & BASE
+   ========================================================== */
+/* border-box: width includes padding and border. Far easier to reason about. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;                 /* nav links glide instead of jumping */
+  scroll-padding-top: var(--header-h);     /* stop sections hiding under the sticky header */
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s, color 0.25s;
+}
+
+h1, h2, h3 {
+  line-height: 1.2;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.02em;
+}
+
+p { margin: 0 0 1em; }
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover { color: var(--accent-hover); }
+
+img {
+  display: block;            /* removes the small gap under inline images */
+  max-width: 100%;
+  height: auto;
+}
+
+ul, ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Visible keyboard focus: important for accessibility */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+
+/* ==========================================================
+   3. LAYOUT HELPERS
+   ========================================================== */
+/* .container centres content and caps its width */
+.container {
+  width: 100%;
+  max-width: 1080px;
+  margin-inline: auto;        /* auto left/right margins = centred */
+  padding-inline: 20px;       /* breathing room on small screens */
+}
+
+.section {
+  padding-block: 96px;
+}
+.section-alt {
+  background: var(--bg-alt);
+  border-block: 1px solid var(--border);
+}
+.section h2 {
+  font-size: clamp(1.75rem, 4vw, 2.4rem);    /* scales with screen, min 1.75rem, max 2.4rem */
+}
+.section-intro {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  margin-bottom: 2.5rem;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;              /* off-screen until focused with Tab */
+}
+.skip-link:focus {
+  left: 12px;
+  top: 12px;
+  z-index: 100;
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+
+/* ==========================================================
+   4. HEADER & NAV
+   ========================================================== */
+.site-header {
+  position: sticky;           /* stays at the top while scrolling */
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  height: 100%;
+  display: flex;                      /* flexbox: lay children out in a row */
+  align-items: center;                /* vertically centred */
+  justify-content: space-between;     /* logo left, nav middle, button right */
+  gap: 16px;
+}
+
+.logo {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.logo:hover { color: #fff; background: var(--accent-hover); }
+
+.site-header nav {
+  display: flex;
+  gap: 6px;
+}
+.site-header nav a {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  transition: color 0.2s, background-color 0.2s;
+}
+.site-header nav a:hover { color: var(--text); }
+
+/* The link for the section you're looking at. script.js sets aria-current. */
+.site-header nav a[aria-current="true"] {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.theme-toggle {
+  display: none;              /* hidden without JavaScript, because it needs JS to work */
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.js .theme-toggle { display: grid; }
+.theme-toggle:hover {
+  border-color: var(--accent);
+  transform: rotate(15deg);
+}
+
+/* Show the moon in light mode and the sun in dark mode */
+.icon-sun { display: none; }
+[data-theme="dark"] .icon-sun { display: block; }
+[data-theme="dark"] .icon-moon { display: none; }
+
+
+/* ==========================================================
+   5. HERO
+   ========================================================== */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: 128px 112px;
+}
+
+/* A soft colored glow behind the text. ::before adds it without extra HTML. */
+.hero::before {
+  content: "";
+  position: absolute;
+  top: -180px;
+  right: -120px;
+  width: 620px;
+  height: 620px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow), transparent 65%);
+  pointer-events: none;       /* never blocks clicks */
+}
+.hero .container { position: relative; }   /* keeps the text above the glow */
+
+.eyebrow {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+.hero h1 {
+  font-size: clamp(2.75rem, 9vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.25em;
+}
+.tagline {
+  font-size: clamp(1.2rem, 2.6vw, 1.6rem);
+  font-weight: 500;
+  max-width: 34ch;                  /* ch = width of the "0" character; keeps line length readable */
+  margin-bottom: 1rem;
+}
+.bio {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  max-width: 58ch;
+  margin-bottom: 2.25rem;
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;                  /* buttons wrap onto a new line on narrow screens */
+  gap: 12px;
+}
+
+
+/* ==========================================================
+   6. BUTTONS
+   ========================================================== */
+.btn {
+  display: inline-block;
+  padding: 13px 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+  transition: transform 0.15s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.btn:hover { transform: translateY(-2px); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 20px var(--glow);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  color: #fff;
+}
+.btn-ghost {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+
+/* ==========================================================
+   7. PROJECT CARDS
+   ========================================================== */
+.card-grid {
+  display: grid;                    /* grid: two-dimensional layout */
+  /* "As many columns as fit, each at least 300px wide, sharing leftover space equally."
+     This one line makes the grid responsive with no media query. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 28px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;                 /* clips the image to the rounded corners */
+  box-shadow: var(--shadow);
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-hover);
+}
+
+.card-media {
+  aspect-ratio: 16 / 10;            /* every image box has the same shape */
+  overflow: hidden;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+}
+.card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                /* fill the box, cropping the edges instead of stretching */
+  object-position: top;
+  transition: transform 0.4s ease;
+}
+.card:hover .card-media img { transform: scale(1.04); }
+
+/* Keep pixel art crisp when it's scaled up, instead of blurry */
+.pixel-art { image-rendering: pixelated; }
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;                          /* fill the rest of the card, so links line up at the bottom */
+  padding: 26px 28px 28px;
+}
+.card-kicker {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+.card h3 { font-size: 1.4rem; }
+.card-body > p:not(.card-kicker) { color: var(--text-muted); }
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+.tags li {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 999px;
+}
+
+.card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: auto;                 /* pushes links to the bottom so all cards line up */
+}
+.card-link {
+  font-weight: 600;
+}
+.card-link span {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.card-link:hover span { transform: translate(2px, -2px); }
+
+
+/* ==========================================================
+   8. CONTACT & FOOTER
+   ========================================================== */
+.contact-card {
+  text-align: center;
+  max-width: 720px;
+  margin-inline: auto;
+  padding: 56px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 8px);
+  box-shadow: var(--shadow);
+}
+.contact-card .section-intro {
+  max-width: 44ch;
+  margin-inline: auto;
+}
+.social {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 1.75rem;
+  font-weight: 600;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding-block: 28px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.site-footer p { margin: 0; }
+
+
+/* ==========================================================
+   9. SCROLL-REVEAL ANIMATION
+   Elements with class "reveal" start invisible and slightly low.
+   script.js adds the class "visible" when they scroll into view.
+   ".js" means this only happens when JavaScript is running,
+   so without JS everything is simply shown.
+   ========================================================== */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.js .reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+/* Second card animates slightly after the first */
+.js .card-grid .reveal:nth-child(2) { transition-delay: 0.1s; }
+
+/* Respect users who ask their OS for less motion */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js .reveal { opacity: 1; transform: none; }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
+
+/* ==========================================================
+   10. RESPONSIVE: small screens
+   A media query applies its rules only when the condition is true.
+   ========================================================== */
+@media (max-width: 640px) {
+  .section { padding-block: 64px; }
+  .hero { padding-block: 72px 64px; }
+  .hero::before { width: 420px; height: 420px; top: -120px; right: -180px; }
+  .site-header nav { gap: 2px; }
+  .site-header nav a { font-size: 0.88rem; padding: 6px 9px; }
+  .card-body { padding: 22px; }
+  .contact-card { padding: 40px 20px; }
+}
+
+/* Very narrow phones: let the email button shrink instead of overflowing */
+@media (max-width: 380px) {
+  .contact-card .btn { font-size: 0.85rem; padding-inline: 16px; }
+}
