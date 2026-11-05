@@ -481,8 +481,9 @@ ul, ol {
   opacity: 1;
   transform: none;
 }
-/* Second card animates slightly after the first */
+/* Later cards animate slightly after the first */
 .js .card-grid .reveal:nth-child(2) { transition-delay: 0.1s; }
+.js .card-grid .reveal:nth-child(3) { transition-delay: 0.2s; }
 
 /* Respect users who ask their OS for less motion */
 @media (prefers-reduced-motion: reduce) {
